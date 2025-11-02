@@ -8,6 +8,13 @@
       "problemMatcher": []
     },
     {
+      "label": "gh: Release Append CN Highlights (auto)",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/generate-cn-highlights.ps1 -UpdateRelease -Tag ${input:releaseTag}",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
       "label": "gh: Release Create (prompt, generate-notes)",
       "type": "shell",
       "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/gh-release-create.ps1 -GenerateNotes",
@@ -247,6 +254,12 @@
       "description": "Select repository visibility",
       "options": ["private", "public", "internal"],
       "default": "private"
+    },
+    {
+      "id": "releaseTag",
+      "type": "promptString",
+      "description": "Release tag to update (e.g., v0.1.1)",
+      "default": "v0.1.1"
     }
   ]
 }

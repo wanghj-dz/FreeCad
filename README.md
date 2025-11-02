@@ -194,6 +194,7 @@ os.environ['FC_MACRO_ROOT'] = r'd:\\FreeCad'
   - gh: Release Create (prompt, draft) — 创建“草稿”发布（可先校对、再正式发布），同样自动生成 Release Notes。
   - gh: Releases View (web) — 在浏览器中查看 Release 页面。
   - gh: Diagnostics (log) — 采集 gh/git/环境信息并输出日志路径，便于排障。
+    - gh: Release Append CN Highlights (auto) — 自动从 git 提交生成“中文要点”并追加到指定版本的 Release 说明顶部（保留原说明）。
   - gh: Install global toolkit (user tasks) — 一键将本仓库的脚本安装到用户目录（%USERPROFILE%\.vscode-gh-toolkit\scripts），并生成用户级 tasks 片段，实现在“任何路径/文件夹”中直接使用这些任务。
   - module: Install RepoToolkit (user scope) — 将轻量 PowerShell 模块 RepoToolkit 安装到用户模块目录（Documents\PowerShell\Modules），从而可直接调用函数而非脚本路径。
   - module: Repo Create & Push (public, HTTPS) — 示例：通过模块函数执行创建并推送。
@@ -288,6 +289,7 @@ ssh -T git@github.com
 从此以后，即使新建一个空文件夹打开 VS Code，也可以通过 Terminal -> Run Task… 直接使用以 `global:` 前缀开头的任务（例如 `global: repo: Create & Push (private, HTTPS)`）。
 另外还提供：`global: gh: Release Create (prompt, generate-notes)`，在任意仓库目录下交互创建发布。
 以及：`global: gh: Release Create (prompt, draft)`，用于先创建草稿版发布。
+以及：`global: gh: Release Append CN Highlights (auto)`，可在任意目录为指定 tag 追加中文要点。
 
 ## 六、PowerShell 模块：RepoToolkit（可选，更优雅）
 
