@@ -41,8 +41,19 @@ if (-not (Test-Command -Name 'gh')) {
   exit 127
 }
 
-# 计算工作区根目录与仓库名（脚本位于 scripts/ 下的约定）
-$workspace = Resolve-Path (Join-Path $PSScriptRoot '..')
+# Debug info
+Write-Host "[DEBUG] PSScriptRoot = $PSScriptRoot"
+Write-Host "[DEBUG] CurrentLocation = $(Get-Location)"
+
+# 计算工作区根目录与仓库名（脚本原先假定位于仓库的 scripts/ 下）
+# 若脚本被安装到 PowerShell Modules（作为模块的一部分），则应以当前工作目录为工作区
+$modulePathPattern = '[\\/]+Modules[\\/]'
+if ($PSScriptRoot -and ($PSScriptRoot -match $modulePathPattern -or $PSScriptRoot -like '*:/Program Files/*')) {
+  # likely running from an installed module or global location -> use current directory
+  $workspace = (Get-Location).Path
+} else {
+  $workspace = Resolve-Path (Join-Path $PSScriptRoot '..')
+}
 $repoName = Split-Path -Path $workspace -Leaf
 
 Write-Host "工作区: $workspace" -ForegroundColor Cyan

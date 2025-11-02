@@ -8,6 +8,7 @@ function Invoke-ToolkitScript {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)] [string]$Name,
+        [hashtable]$NamedArgs,
         [string[]]$ArgumentList
     )
     $scriptsDir = Join-Path $PSScriptRoot 'Scripts'
@@ -15,7 +16,15 @@ function Invoke-ToolkitScript {
     if (-not (Test-Path -LiteralPath $scriptPath)) {
         throw "Toolkit script not found: $scriptPath"
     }
-    & $scriptPath @ArgumentList
+    if ($NamedArgs) {
+        Write-Host "[DEBUG] Invoking $scriptPath with NamedArgs: $($NamedArgs.Keys -join ',')"
+        & $scriptPath @NamedArgs
+    } elseif ($ArgumentList) {
+        Write-Host "[DEBUG] Invoking $scriptPath with ArgumentList: $ArgumentList"
+        & $scriptPath @ArgumentList
+    } else {
+        & $scriptPath
+    }
 }
 
 function Install-RepoToolkitGlobalTasks {
@@ -31,10 +40,10 @@ function Invoke-RepoCreateAndPush {
         [switch]$UseHttps,
         [switch]$NoPrompt
     )
-    $args = @('-Visibility', $Visibility)
-    if ($UseHttps) { $args += '-UseHttps' }
-    if ($NoPrompt) { $args += '-NoPrompt' }
-    Invoke-ToolkitScript -Name 'repo-create-and-push.ps1' -ArgumentList $args
+    $named = @{ Visibility = $Visibility }
+    if ($UseHttps) { $named['UseHttps'] = $true }
+    if ($NoPrompt) { $named['NoPrompt'] = $true }
+    Invoke-ToolkitScript -Name 'repo-create-and-push.ps1' -NamedArgs $named
 }
 
 function Set-RepoRemoteHttps { [CmdletBinding()] param() Invoke-ToolkitScript -Name 'git-remote-to-https.ps1' }
@@ -56,10 +65,9 @@ function Get-RepoToolkitInfo {
     }
 }
 
-Export-ModuleMember -Function \
-    Install-RepoToolkitGlobalTasks, \
-    Invoke-RepoCreateAndPush, \
-    Set-RepoRemoteHttps, Set-RepoRemoteSsh, \
-    Set-GitPreferenceHttps, Set-GitPreferenceSsh, \
-    Invoke-GhBootstrap, Invoke-GhDiagnostics, Invoke-GhLoginToken, \
+Export-ModuleMember -Function Install-RepoToolkitGlobalTasks,
+    Invoke-RepoCreateAndPush,
+    Set-RepoRemoteHttps, Set-RepoRemoteSsh,
+    Set-GitPreferenceHttps, Set-GitPreferenceSsh,
+    Invoke-GhBootstrap, Invoke-GhDiagnostics, Invoke-GhLoginToken,
     Get-RepoToolkitInfo

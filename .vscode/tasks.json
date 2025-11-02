@@ -8,6 +8,27 @@
       "problemMatcher": []
     },
     {
+      "label": "VS Code: Backup user (zip)",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/backup-vscode-user.ps1",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true }
+    },
+    {
+      "label": "VS Code: Restore user (latest, merge tasks)",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/restore-vscode-user.ps1 -MergeTasks",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "VS Code: Bootstrap after reinstall",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/bootstrap-after-reinstall.ps1",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
       "label": "gh: Login (browser)",
       "type": "shell",
       "command": "gh auth login",
@@ -194,6 +215,13 @@
       "type": "shell",
       "command": "pwsh -NoProfile -ExecutionPolicy Bypass -Command Import-Module RepoToolkit; Invoke-RepoCreateAndPush -Visibility public -UseHttps -NoPrompt",
       "options": { "shell": { "executable": "pwsh.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"] } },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "module: Self-update RepoToolkit",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/install-module-RepoToolkit.ps1",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "dedicated" }
     }

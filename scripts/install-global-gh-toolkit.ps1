@@ -24,7 +24,12 @@ $toCopy = @(
     'git-remote-to-https.ps1',
     'git-remote-to-ssh.ps1',
     'git-prefer-https.ps1',
-    'git-prefer-ssh.ps1'
+    'git-prefer-ssh.ps1',
+    'install-module-RepoToolkit.ps1',
+    'merge-user-tasks.ps1',
+    'backup-vscode-user.ps1',
+    'restore-vscode-user.ps1',
+    'bootstrap-after-reinstall.ps1'
 )
 
 foreach ($f in $toCopy) {
@@ -53,7 +58,18 @@ $tpl = @{
     @{ label='global: repo: Switch remote to HTTPS'; type='shell'; command="$globalPwsh ${scriptsTarget}/git-remote-to-https.ps1" },
     @{ label='global: repo: Switch remote to SSH'; type='shell'; command="$globalPwsh ${scriptsTarget}/git-remote-to-ssh.ps1" },
     @{ label='global: repo: Prefer HTTPS (no SSH key)'; type='shell'; command="$globalPwsh ${scriptsTarget}/git-prefer-https.ps1" },
-    @{ label='global: repo: Prefer SSH'; type='shell'; command="$globalPwsh ${scriptsTarget}/git-prefer-ssh.ps1" }
+        @{ label='global: repo: Prefer SSH'; type='shell'; command="$globalPwsh ${scriptsTarget}/git-prefer-ssh.ps1" },
+        # VS Code user profile helpers
+        @{ label='global: VS Code: Backup user (zip)'; type='shell'; command="$globalPwsh ${scriptsTarget}/backup-vscode-user.ps1" },
+        @{ label='global: VS Code: Restore user (latest, merge tasks)'; type='shell'; command="$globalPwsh ${scriptsTarget}/restore-vscode-user.ps1 -MergeTasks" },
+        @{ label='global: VS Code: Bootstrap after reinstall'; type='shell'; command="$globalPwsh ${scriptsTarget}/bootstrap-after-reinstall.ps1" },
+        # Module-based global tasks (require RepoToolkit installed)
+        @{ label='global: module: Repo Create & Push (public, HTTPS)'; type='shell'; command='Import-Module RepoToolkit; Invoke-RepoCreateAndPush -Visibility public -UseHttps -NoPrompt'; options=@{ shell=@{ executable='pwsh.exe'; args=@('-NoProfile','-ExecutionPolicy','Bypass','-Command') } } },
+        @{ label='global: module: Set Remote HTTPS'; type='shell'; command='Import-Module RepoToolkit; Set-RepoRemoteHttps'; options=@{ shell=@{ executable='pwsh.exe'; args=@('-NoProfile','-ExecutionPolicy','Bypass','-Command') } } },
+        @{ label='global: module: Set Remote SSH'; type='shell'; command='Import-Module RepoToolkit; Set-RepoRemoteSsh'; options=@{ shell=@{ executable='pwsh.exe'; args=@('-NoProfile','-ExecutionPolicy','Bypass','-Command') } } },
+        @{ label='global: module: Prefer HTTPS'; type='shell'; command='Import-Module RepoToolkit; Set-GitPreferenceHttps'; options=@{ shell=@{ executable='pwsh.exe'; args=@('-NoProfile','-ExecutionPolicy','Bypass','-Command') } } },
+        @{ label='global: module: Prefer SSH'; type='shell'; command='Import-Module RepoToolkit; Set-GitPreferenceSsh'; options=@{ shell=@{ executable='pwsh.exe'; args=@('-NoProfile','-ExecutionPolicy','Bypass','-Command') } } },
+        @{ label='global: module: Self-update RepoToolkit'; type='shell'; command="$globalPwsh ${scriptsTarget}/install-module-RepoToolkit.ps1" }
   )
 }
 

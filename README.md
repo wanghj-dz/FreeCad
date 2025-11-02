@@ -287,7 +287,7 @@ ssh -T git@github.com
 
 ## 六、PowerShell 模块：RepoToolkit（可选，更优雅）
 
-为获得更优雅的命令式体验（无需硬编码脚本路径），我们提供轻量模块 `RepoToolkit`：
+为获得更优雅的命令式体验（无需硬编码脚本路径），我们提供轻量模块 `RepoToolkit`（当前版本：0.1.0）：
 
 - 安装（VS Code 任务）：`module: Install RepoToolkit (user scope)`
 - 安装（命令行）：
@@ -305,6 +305,20 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File "${workspaceFolder}/scripts/instal
 - `Invoke-GhBootstrap` / `Invoke-GhDiagnostics` / `Invoke-GhLoginToken`
 
 你也可以将这些函数放入 VS Code 用户级任务中直接调用（无需引用脚本路径）。
+
+### 自更新（覆盖安装）
+
+- 工作区任务：`module: Self-update RepoToolkit`（重新复制并导入 0.1.x 版本模块）
+- 全局任务片段也包含：`global: module: Self-update RepoToolkit`（前提：已运行一次 “gh: Install global toolkit (user tasks)”）
+
+### 全局模块任务（依赖 RepoToolkit 已安装）
+
+运行 `gh: Install global toolkit (user tasks)` 后，你将看到以 `global: module:` 开头的任务，例如：
+
+- global: module: Repo Create & Push (public, HTTPS)
+- global: module: Set Remote HTTPS / SSH
+- global: module: Prefer HTTPS / SSH
+- global: module: Self-update RepoToolkit
 
 ### 一键创建远程仓库并 Push（与文件夹同名）
 
@@ -333,3 +347,48 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File "${workspaceFolder}/scripts/instal
 
 
  
+## 七、重装后的备份/恢复与一键引导
+
+为了在重装 VS Code 或换机后快速恢复你的用户配置（设置、快捷键、任务、代码片段与扩展列表），本仓库提供了三条开箱即用的任务与对应脚本：
+
+- VS Code: Backup user (zip) — 备份用户配置为一个 zip
+- VS Code: Restore user (latest, merge tasks) — 从最新备份恢复，并“合并”任务（避免覆盖你当前已有的用户任务）
+- VS Code: Bootstrap after reinstall — 一键引导：安装全局工具任务、安装 RepoToolkit 模块、合并用户任务；可选同时自动安装扩展
+
+你可以在当前工作区通过 Terminal -> Run Task… 直接运行上述三条任务；或者先运行“gh: Install global toolkit (user tasks)”，之后在任何目录都能看到以 global: 开头的同名任务：
+
+- global: VS Code: Backup user (zip)
+- global: VS Code: Restore user (latest, merge tasks)
+- global: VS Code: Bootstrap after reinstall
+
+备份 zip 默认保存到：`%USERPROFILE%\.vscode-gh-toolkit\backups\vscode-user-YYYYMMDD-HHMMSS.zip`
+
+备份内容包含：
+
+- `%APPDATA%\Code\User\settings.json`
+- `%APPDATA%\Code\User\keybindings.json`
+- `%APPDATA%\Code\User\tasks.json`
+- `%APPDATA%\Code\User\snippets\` 下的全部文件
+- 当前已安装扩展列表（extensions.txt）
+- 如果存在，还会包含全局任务片段：`%USERPROFILE%\.vscode-gh-toolkit\tasks.user.json`
+
+恢复说明：
+
+- Restore 脚本默认取“最新”的备份 zip；也可通过 `-ZipPath` 指定某个备份文件。
+- 带 `-MergeTasks` 时，会将备份中的用户任务与当前用户任务按 label 去重合并；不带此参数则直接覆盖用户任务。
+- 带 `-InstallExtensions` 时，会按备份中的 extensions.txt 安装扩展（可选）。
+
+一键引导（Bootstrap）说明：
+
+- 重装 VS Code 后，先在任意文件夹打开 VS Code，运行任务“VS Code: Bootstrap after reinstall”。
+- 它会：
+  - 安装/更新全局工具任务（复制脚本到 `%USERPROFILE%\\.vscode-gh-toolkit\\scripts` 并生成用户级任务）
+  - 安装/更新 PowerShell 模块 RepoToolkit（用户作用域）
+  - 合并用户任务（避免覆盖现有）
+  - 如果附带 `-InstallExtensions`，还会从你的最新备份中自动安装扩展
+- 完成后重载 VS Code，即可在任何目录直接使用以 `global:` 开头的任务。
+
+提示：如果你之前尚未创建任何备份，建议先在当前环境运行一次“VS Code: Backup user (zip)”。
+
+
+
