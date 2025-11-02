@@ -190,6 +190,7 @@ os.environ['FC_MACRO_ROOT'] = r'd:\\FreeCad'
   - gh: Repo View (web) — 打开当前仓库页面。
   - gh: Setup Git — 由 gh 自动配置 Git 凭据（适用于首次配置或切换账户）。
   - gh: Create Release (web) — 在浏览器中创建 Release（交互式表单）。
+  - gh: Release Create (prompt, generate-notes) — 任务内交互输入 Tag（如 v0.1.1），自动生成 Release Notes 并创建发布。
   - gh: Releases View (web) — 在浏览器中查看 Release 页面。
   - gh: Diagnostics (log) — 采集 gh/git/环境信息并输出日志路径，便于排障。
   - gh: Install global toolkit (user tasks) — 一键将本仓库的脚本安装到用户目录（%USERPROFILE%\.vscode-gh-toolkit\scripts），并生成用户级 tasks 片段，实现在“任何路径/文件夹”中直接使用这些任务。
@@ -284,6 +285,7 @@ ssh -T git@github.com
 - 若已存在，则保留现有文件，并提示你在 VS Code 中通过 “Tasks: Open User Tasks” 打开并合并（拷贝片段内容到你的 user tasks）
 
 从此以后，即使新建一个空文件夹打开 VS Code，也可以通过 Terminal -> Run Task… 直接使用以 `global:` 前缀开头的任务（例如 `global: repo: Create & Push (private, HTTPS)`）。
+另外还提供：`global: gh: Release Create (prompt, generate-notes)`，在任意仓库目录下交互创建发布。
 
 ## 六、PowerShell 模块：RepoToolkit（可选，更优雅）
 

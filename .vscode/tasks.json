@@ -8,6 +8,13 @@
       "problemMatcher": []
     },
     {
+      "label": "gh: Release Create (prompt, generate-notes)",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/gh-release-create.ps1 -GenerateNotes",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
       "label": "VS Code: Backup user (zip)",
       "type": "shell",
       "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/backup-vscode-user.ps1",
