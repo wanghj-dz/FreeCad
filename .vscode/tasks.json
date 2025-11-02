@@ -160,6 +160,42 @@
       "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/git-remote-to-ssh.ps1",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "repo: Prefer HTTPS (no SSH key)",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/git-prefer-https.ps1",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "repo: Prefer SSH",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/git-prefer-ssh.ps1",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "gh: Install global toolkit (user tasks)",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/install-global-gh-toolkit.ps1",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "module: Install RepoToolkit (user scope)",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/install-module-RepoToolkit.ps1",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "module: Repo Create & Push (public, HTTPS)",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -Command Import-Module RepoToolkit; Invoke-RepoCreateAndPush -Visibility public -UseHttps -NoPrompt",
+      "options": { "shell": { "executable": "pwsh.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"] } },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
     }
   ],
   "inputs": [

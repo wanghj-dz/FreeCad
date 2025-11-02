@@ -1,0 +1,75 @@
+param(
+    [switch]$Force
+)
+$ErrorActionPreference = 'Stop'
+
+function Info($m){ Write-Host "[INFO] $m" -ForegroundColor Cyan }
+function Warn($m){ Write-Host "[WARN] $m" -ForegroundColor Yellow }
+function Err ($m){ Write-Host "[ERROR] $m" -ForegroundColor Red }
+
+$userProfilePath = [Environment]::GetFolderPath('UserProfile')
+$toolkitRoot   = Join-Path $userProfilePath '.vscode-gh-toolkit'
+$scriptsTarget = Join-Path $toolkitRoot 'scripts'
+
+# Create folders
+New-Item -Path $scriptsTarget -ItemType Directory -Force | Out-Null
+
+# Source scripts from current workspace
+$workspaceScripts = Join-Path $PSScriptRoot '.'
+$toCopy = @(
+    'gh-bootstrap.ps1',
+    'gh-diagnostics.ps1',
+    'gh-login-token.ps1',
+    'repo-create-and-push.ps1',
+    'git-remote-to-https.ps1',
+    'git-remote-to-ssh.ps1',
+    'git-prefer-https.ps1',
+    'git-prefer-ssh.ps1'
+)
+
+foreach ($f in $toCopy) {
+    $src = Join-Path $workspaceScripts $f
+    if (Test-Path -LiteralPath $src) {
+        Copy-Item -LiteralPath $src -Destination (Join-Path $scriptsTarget $f) -Force
+        Info "Installed: $f"
+    } else {
+        Warn "Missing script: $f (skipped)"
+    }
+}
+
+# Generate user tasks snippet
+$globalPwsh = 'pwsh -NoProfile -ExecutionPolicy Bypass -File'
+$tpl = @{
+  version = '2.0.0'
+  tasks = @(
+    @{ label='global: gh: Bootstrap (check/install)'; type='shell'; command="$globalPwsh ${scriptsTarget}/gh-bootstrap.ps1" },
+    @{ label='global: gh: Login (browser)'; type='shell'; command='gh auth login'; options=@{ shell=@{ executable='pwsh.exe'; args=@('-NoProfile','-ExecutionPolicy','Bypass','-Command') } } },
+    @{ label='global: gh: Login with token (masked)'; type='shell'; command="$globalPwsh ${scriptsTarget}/gh-login-token.ps1" },
+    @{ label='global: gh: Status'; type='shell'; command='gh auth status'; options=@{ shell=@{ executable='pwsh.exe'; args=@('-NoProfile','-ExecutionPolicy','Bypass','-Command') } } },
+    @{ label='global: gh: Logout'; type='shell'; command='gh auth logout -h github.com'; options=@{ shell=@{ executable='pwsh.exe'; args=@('-NoProfile','-ExecutionPolicy','Bypass','-Command') } } },
+    @{ label='global: gh: Diagnostics (log)'; type='shell'; command="$globalPwsh ${scriptsTarget}/gh-diagnostics.ps1" },
+    @{ label='global: repo: Create & Push (public, HTTPS)'; type='shell'; command="$globalPwsh ${scriptsTarget}/repo-create-and-push.ps1 -Visibility public -UseHttps -NoPrompt" },
+    @{ label='global: repo: Create & Push (private, HTTPS)'; type='shell'; command="$globalPwsh ${scriptsTarget}/repo-create-and-push.ps1 -Visibility private -UseHttps -NoPrompt" },
+    @{ label='global: repo: Switch remote to HTTPS'; type='shell'; command="$globalPwsh ${scriptsTarget}/git-remote-to-https.ps1" },
+    @{ label='global: repo: Switch remote to SSH'; type='shell'; command="$globalPwsh ${scriptsTarget}/git-remote-to-ssh.ps1" },
+    @{ label='global: repo: Prefer HTTPS (no SSH key)'; type='shell'; command="$globalPwsh ${scriptsTarget}/git-prefer-https.ps1" },
+    @{ label='global: repo: Prefer SSH'; type='shell'; command="$globalPwsh ${scriptsTarget}/git-prefer-ssh.ps1" }
+  )
+}
+
+# Serialize to JSON (no comments)
+$snippetPath = Join-Path $toolkitRoot 'tasks.user.json'
+($tpl | ConvertTo-Json -Depth 6) | Set-Content -LiteralPath $snippetPath -Encoding UTF8
+Info "User tasks snippet generated: $snippetPath"
+
+# Optionally install as user tasks if no tasks.json exists yet
+$userTasks = Join-Path $env:APPDATA 'Code\User\tasks.json'
+if (-not (Test-Path -LiteralPath $userTasks)) {
+    Copy-Item -LiteralPath $snippetPath -Destination $userTasks
+    Info "Installed user tasks to: $userTasks"
+} else {
+    Warn "User tasks already exist at $userTasks. Review and merge if desired."
+    Write-Host "Open with:  Ctrl+Shift+P -> 'Tasks: Open User Tasks' and copy entries from:`n  $snippetPath" -ForegroundColor DarkGray
+}
+
+Info "Global toolkit installed to: $toolkitRoot"

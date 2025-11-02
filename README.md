@@ -192,6 +192,9 @@ os.environ['FC_MACRO_ROOT'] = r'd:\\FreeCad'
   - gh: Create Release (web) — 在浏览器中创建 Release（交互式表单）。
   - gh: Releases View (web) — 在浏览器中查看 Release 页面。
   - gh: Diagnostics (log) — 采集 gh/git/环境信息并输出日志路径，便于排障。
+  - gh: Install global toolkit (user tasks) — 一键将本仓库的脚本安装到用户目录（%USERPROFILE%\.vscode-gh-toolkit\scripts），并生成用户级 tasks 片段，实现在“任何路径/文件夹”中直接使用这些任务。
+  - module: Install RepoToolkit (user scope) — 将轻量 PowerShell 模块 RepoToolkit 安装到用户模块目录（Documents\PowerShell\Modules），从而可直接调用函数而非脚本路径。
+  - module: Repo Create & Push (public, HTTPS) — 示例：通过模块函数执行创建并推送。
   - repo: Create & Push (private/public) — 在 GitHub 上创建与文件夹同名的仓库并推送当前工作区内容。
   - repo: Create & Push (choose visibility) — 运行前交互选择 `private`/`public`/`internal` 后创建并推送（注：`internal` 仅适用于组织仓库）。
   - repo: Create & Push (public, HTTPS) / (private, HTTPS) — 使用 HTTPS 远程（适合未配置 SSH key 的环境）。
@@ -231,6 +234,8 @@ os.environ['FC_MACRO_ROOT'] = r'd:\\FreeCad'
 
 - repo: Switch remote to HTTPS — 将 `origin` 设置为 `https://github.com/<owner>/<repo>.git`
 - repo: Switch remote to SSH — 将 `origin` 设置为 `git@github.com:<owner>/<repo>.git`
+- repo: Prefer HTTPS (no SSH key) — 取消可能存在的全局 URL 重写规则（把 https 改写成 ssh），将 gh 的 git_protocol 设为 https，并切换远程到 HTTPS
+- repo: Prefer SSH — 将 gh 的 git_protocol 设为 ssh，并切换远程为 SSH（可选添加 URL 重写规则，见脚本注释）
 
 使用方法：Terminal -> Run Task… -> 选择上面任一任务。脚本会优先通过 `gh repo view` 获取标准的 `<owner>/<repo>`，若不可用则从现有 `origin` 解析。
 
@@ -255,6 +260,51 @@ ssh -T git@github.com
 ```
 
 切换完成后，可用 `git remote -v` 查看当前远程是否已更新。
+
+提示：若你看到 `git push` 到 https 仍然走 SSH 并报 “Permission denied (publickey)” 的情况，多半是全局配置里有一条 URL 重写规则：
+
+```ini
+[url "git@github.com:"]
+  insteadof = https://github.com/
+```
+
+执行 “repo: Prefer HTTPS (no SSH key)” 任务会自动移除此规则，并将远程切回 HTTPS；随后再推送即可。
+
+### 全局安装（任何路径/文件夹可用）
+
+如果你希望在任意项目中都能直接使用这些任务，而不必复制 `.vscode` 和 `scripts`，可执行任务：
+
+- gh: Install global toolkit (user tasks)
+
+它会：
+
+- 将本仓库的脚本复制到 `%USERPROFILE%\.vscode-gh-toolkit\scripts`
+- 生成用户级任务文件片段：`%USERPROFILE%\.vscode-gh-toolkit\tasks.user.json`
+- 如用户级任务尚未存在，会直接安装到 `%APPDATA%\Code\User\tasks.json`
+- 若已存在，则保留现有文件，并提示你在 VS Code 中通过 “Tasks: Open User Tasks” 打开并合并（拷贝片段内容到你的 user tasks）
+
+从此以后，即使新建一个空文件夹打开 VS Code，也可以通过 Terminal -> Run Task… 直接使用以 `global:` 前缀开头的任务（例如 `global: repo: Create & Push (private, HTTPS)`）。
+
+## 六、PowerShell 模块：RepoToolkit（可选，更优雅）
+
+为获得更优雅的命令式体验（无需硬编码脚本路径），我们提供轻量模块 `RepoToolkit`：
+
+- 安装（VS Code 任务）：`module: Install RepoToolkit (user scope)`
+- 安装（命令行）：
+
+```pwsh
+pwsh -NoProfile -ExecutionPolicy Bypass -File "${workspaceFolder}/scripts/install-module-RepoToolkit.ps1"
+```
+
+安装后可用的函数（示例）：
+
+- `Invoke-RepoCreateAndPush -Visibility public -UseHttps -NoPrompt`
+- `Set-RepoRemoteHttps` / `Set-RepoRemoteSsh`
+- `Set-GitPreferenceHttps` / `Set-GitPreferenceSsh`
+- `Install-RepoToolkitGlobalTasks`（安装用户级全局任务）
+- `Invoke-GhBootstrap` / `Invoke-GhDiagnostics` / `Invoke-GhLoginToken`
+
+你也可以将这些函数放入 VS Code 用户级任务中直接调用（无需引用脚本路径）。
 
 ### 一键创建远程仓库并 Push（与文件夹同名）
 
