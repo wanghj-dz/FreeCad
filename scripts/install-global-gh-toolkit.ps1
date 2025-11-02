@@ -55,6 +55,7 @@ $tpl = @{
     @{ label='global: gh: Logout'; type='shell'; command='gh auth logout -h github.com'; options=@{ shell=@{ executable='pwsh.exe'; args=@('-NoProfile','-ExecutionPolicy','Bypass','-Command') } } },
     @{ label='global: gh: Diagnostics (log)'; type='shell'; command="$globalPwsh ${scriptsTarget}/gh-diagnostics.ps1" },
     @{ label='global: gh: Release Create (prompt, generate-notes)'; type='shell'; command="$globalPwsh ${scriptsTarget}/gh-release-create.ps1 -GenerateNotes" },
+    @{ label='global: gh: Release Create (prompt, draft)'; type='shell'; command="$globalPwsh ${scriptsTarget}/gh-release-create.ps1 -Draft -GenerateNotes" },
     @{ label='global: repo: Create & Push (public, HTTPS)'; type='shell'; command="$globalPwsh ${scriptsTarget}/repo-create-and-push.ps1 -Visibility public -UseHttps -NoPrompt" },
     @{ label='global: repo: Create & Push (private, HTTPS)'; type='shell'; command="$globalPwsh ${scriptsTarget}/repo-create-and-push.ps1 -Visibility private -UseHttps -NoPrompt" },
     @{ label='global: repo: Switch remote to HTTPS'; type='shell'; command="$globalPwsh ${scriptsTarget}/git-remote-to-https.ps1" },
