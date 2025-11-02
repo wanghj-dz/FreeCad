@@ -156,7 +156,15 @@ try {
     }
 
     if ($createExit -ne 0) {
-      # 可能原因：仓库已存在。尝试手动设置 origin 并推送。
+      # 检测仓库是否真实存在
+      $exists = $false
+      try { gh repo view "$login/$repoName" --json name -q .name | Out-Null; if ($LASTEXITCODE -eq 0) { $exists = $true } } catch {}
+      if (-not $exists) {
+        Write-Error "GitHub 仓库创建失败且远端不存在：$login/$repoName。请检查 gh 权限或网络，然后重试。"
+        exit 1
+      }
+
+      # 仓库已存在：设置 origin 并推送
       if (-not $login) {
         $login = Read-Host '请输入你的 GitHub 用户名（或 org 名称）'
       }

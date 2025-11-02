@@ -225,6 +225,37 @@ os.environ['FC_MACRO_ROOT'] = r'd:\\FreeCad'
 - 若未配置 SSH key，推荐使用 HTTPS 任务或在交互式任务中勾选 HTTPS 变体（通过 -UseHttps）。
 - 也可以后续在仓库中切换远程：`git remote set-url origin https://github.com/<owner>/<repo>.git`。
 
+### 在 HTTPS 与 SSH 之间切换
+
+已内置两条 VS Code 任务，便于一键切换当前仓库的远程 `origin`：
+
+- repo: Switch remote to HTTPS — 将 `origin` 设置为 `https://github.com/<owner>/<repo>.git`
+- repo: Switch remote to SSH — 将 `origin` 设置为 `git@github.com:<owner>/<repo>.git`
+
+使用方法：Terminal -> Run Task… -> 选择上面任一任务。脚本会优先通过 `gh repo view` 获取标准的 `<owner>/<repo>`，若不可用则从现有 `origin` 解析。
+
+若选择 SSH，请确保本机已配置 SSH 公钥并已添加到 GitHub：
+
+- 生成密钥（如尚未生成）：
+
+```pwsh
+ssh-keygen -t ed25519 -C "you@example.com"
+```
+
+- 复制公钥内容到剪贴板并粘贴到 GitHub Settings -> SSH and GPG keys：
+
+```pwsh
+Get-Content $HOME/.ssh/id_ed25519.pub | Set-Clipboard
+```
+
+- 验证连通：
+
+```pwsh
+ssh -T git@github.com
+```
+
+切换完成后，可用 `git remote -v` 查看当前远程是否已更新。
+
 ### 一键创建远程仓库并 Push（与文件夹同名）
 
 1) 先确保已登录 gh（运行任务：`gh: Login (browser)`）并完成 Git 凭据配置（`gh: Setup Git`）。
