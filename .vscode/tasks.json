@@ -1,0 +1,160 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "gh: Bootstrap (check/install)",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/gh-bootstrap.ps1",
+      "problemMatcher": []
+    },
+    {
+      "label": "gh: Login (browser)",
+      "type": "shell",
+      "command": "gh auth login",
+      "options": {
+        "shell": {
+          "executable": "pwsh.exe",
+          "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"]
+        }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "gh: Login with token (masked)",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/gh-login-token.ps1",
+      "problemMatcher": []
+    },
+    {
+      "label": "gh: Status",
+      "type": "shell",
+      "command": "gh auth status",
+      "options": {
+        "shell": {
+          "executable": "pwsh.exe",
+          "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"]
+        }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "gh: Logout",
+      "type": "shell",
+      "command": "gh auth logout -h github.com",
+      "options": {
+        "shell": {
+          "executable": "pwsh.exe",
+          "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"]
+        }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "gh: PR Create (web)",
+      "type": "shell",
+      "command": "gh pr create --web --fill",
+      "options": { "shell": { "executable": "pwsh.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"] } },
+      "problemMatcher": []
+    },
+    {
+      "label": "gh: PR Status",
+      "type": "shell",
+      "command": "gh pr status",
+      "options": { "shell": { "executable": "pwsh.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"] } },
+      "problemMatcher": []
+    },
+    {
+      "label": "gh: PR View (web)",
+      "type": "shell",
+      "command": "gh pr view --web",
+      "options": { "shell": { "executable": "pwsh.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"] } },
+      "problemMatcher": []
+    },
+    {
+      "label": "gh: Issue Create (web)",
+      "type": "shell",
+      "command": "gh issue create --web",
+      "options": { "shell": { "executable": "pwsh.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"] } },
+      "problemMatcher": []
+    },
+    {
+      "label": "gh: Repo View (web)",
+      "type": "shell",
+      "command": "gh repo view --web",
+      "options": { "shell": { "executable": "pwsh.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"] } },
+      "problemMatcher": []
+    },
+    {
+      "label": "gh: Setup Git",
+      "type": "shell",
+      "command": "gh auth setup-git",
+      "options": { "shell": { "executable": "pwsh.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"] } },
+      "problemMatcher": []
+    },
+    {
+      "label": "gh: Create Release (web)",
+      "type": "shell",
+      "command": "gh release create --web",
+      "options": { "shell": { "executable": "pwsh.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"] } },
+      "problemMatcher": []
+    },
+    {
+      "label": "gh: Releases View (web)",
+      "type": "shell",
+      "command": "gh release view --web",
+      "options": { "shell": { "executable": "pwsh.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"] } },
+      "problemMatcher": []
+    },
+    {
+      "label": "gh: Diagnostics (log)",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/gh-diagnostics.ps1",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true }
+    },
+    {
+      "label": "repo: Create & Push (private)",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/repo-create-and-push.ps1 -Visibility private -NoPrompt",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "repo: Create & Push (public)",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/repo-create-and-push.ps1 -Visibility public -NoPrompt",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "repo: Create & Push (public, HTTPS)",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/repo-create-and-push.ps1 -Visibility public -UseHttps -NoPrompt",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "repo: Create & Push (private, HTTPS)",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/repo-create-and-push.ps1 -Visibility private -UseHttps -NoPrompt",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "repo: Create & Push (choose visibility)",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/repo-create-and-push.ps1 -Visibility ${input:repoVisibility} -NoPrompt",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "repoVisibility",
+      "type": "pickString",
+      "description": "Select repository visibility",
+      "options": ["private", "public", "internal"],
+      "default": "private"
+    }
+  ]
+}

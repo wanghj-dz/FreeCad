@@ -1,0 +1,42 @@
+# -*- coding: utf-8 -*-
+# Macro: Apply chamfer (bevel) to selected edges with a given size
+# Usage: Select one or more edges in GUI, then run this macro. It will create Part::Chamfer.
+
+import FreeCAD as App
+import FreeCADGui as Gui
+
+DOC = App.ActiveDocument or App.newDocument("ChamferDoc")
+sel = Gui.Selection.getSelectionEx()
+if not sel:
+    App.Console.PrintError('[ChamferEdges] 请先选择一个或多个边（Edges）。\n')
+else:
+    # Ask size (equal distances)
+    try:
+        from PySide2 import QtWidgets
+    except Exception:
+        from PySide import QtGui as QtWidgets  # fallback
+    s, ok = QtWidgets.QInputDialog.getDouble(None, 'Chamfer 距离', '距离 (mm):', 1.0, 0.01, 1e6, 2)
+    if not ok:
+        App.Console.PrintMessage('[ChamferEdges] 已取消。\n')
+    else:
+        base = sel[0].Object
+        edge_names = []
+        for ssel in sel:
+            if ssel.Object == base:
+                for n in ssel.SubElementNames:
+                    if n.startswith('Edge'):
+                        edge_names.append(n)
+        if not edge_names:
+            App.Console.PrintError('[ChamferEdges] 没有在首个对象上选中任何 Edge。\n')
+        else:
+            ch = DOC.addObject('Part::Chamfer', 'Chamfer')
+            ch.Base = base
+            ch.Edges = edge_names
+            ch.Size = float(s)
+            DOC.recompute()
+            try:
+                base.ViewObject.Visibility = False
+                ch.ViewObject.Visibility = True
+            except Exception:
+                pass
+            App.Console.PrintMessage('[ChamferEdges] 已创建倒角：距离=%.3f，边数=%d\n' % (s, len(edge_names)))

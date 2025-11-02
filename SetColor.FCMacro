@@ -1,0 +1,28 @@
+# -*- coding: utf-8 -*-
+# Macro: Set color of selected (or all visible) objects using a color dialog
+
+import FreeCAD as App
+import FreeCADGui as Gui
+
+DOC = App.ActiveDocument
+if DOC is None:
+    App.Console.PrintError('[SetColor] 没有活动文档。\n')
+else:
+    sel = Gui.Selection.getSelection()
+    targets = sel if sel else [o for o in DOC.Objects if hasattr(o,'ViewObject') and o.ViewObject.Visibility]
+    try:
+        from PySide2 import QtWidgets, QtGui
+    except Exception:
+        from PySide import QtGui as QtWidgets
+        QtGui = QtWidgets
+    color = QtWidgets.QColorDialog.getColor()
+    if not color.isValid():
+        App.Console.PrintMessage('[SetColor] 已取消。\n')
+    else:
+        rgb = (color.red()/255.0, color.green()/255.0, color.blue()/255.0)
+        for o in targets:
+            try:
+                o.ViewObject.ShapeColor = rgb
+            except Exception:
+                pass
+        App.Console.PrintMessage('[SetColor] 已设置颜色为 RGB=%.2f,%.2f,%.2f\n' % rgb)

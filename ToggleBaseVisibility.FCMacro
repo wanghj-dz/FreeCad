@@ -1,0 +1,40 @@
+# -*- coding: utf-8 -*-
+# Macro: Toggle visibility of intermediate (referenced) objects, keeping final body visible
+
+import FreeCAD as App
+import FreeCADGui as Gui
+
+DOC = App.ActiveDocument
+if DOC is None:
+    App.Console.PrintError('[ToggleBaseVisibility] 没有活动文档。\n')
+else:
+    referenced = set()
+    def _collect_refs(o):
+        for attr in ('Base', 'Tool', 'First', 'Second'):
+            if hasattr(o, attr):
+                ref = getattr(o, attr)
+                if ref:
+                    referenced.add(ref)
+        for attr in ('Objects', 'Shapes', 'Group', 'Links'):
+            if hasattr(o, attr):
+                try:
+                    for it in getattr(o, attr) or []:
+                        if it:
+                            referenced.add(it)
+                except Exception:
+                    pass
+    for obj in DOC.Objects:
+        _collect_refs(obj)
+    finals = [o for o in DOC.Objects if hasattr(o,'Shape') and getattr(o,'Shape',None) and not o.Shape.isNull() and o not in referenced]
+    finals = finals or [o for o in DOC.Objects if hasattr(o,'Shape') and getattr(o,'Shape',None) and not o.Shape.isNull()]
+
+    # Toggle referenced objects visibility
+    new_state = None
+    for o in DOC.Objects:
+        if o in finals:
+            continue
+        if hasattr(o,'ViewObject'):
+            if new_state is None:
+                new_state = not o.ViewObject.Visibility
+            o.ViewObject.Visibility = new_state
+    App.Console.PrintMessage('[ToggleBaseVisibility] 切换中间体可见性完成。\n')

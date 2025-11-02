@@ -1,0 +1,23 @@
+# -*- coding: utf-8 -*-
+# FreeCAD Macro: Create a simple cube (Part::Box)
+# Usage: Open FreeCAD GUI -> Macro -> Macros... -> Execute this file
+
+import FreeCAD as App
+import Part
+
+# Create or reuse document
+_doc = App.ActiveDocument or App.newDocument("CubeDoc")
+
+# Add a cube with default 10x10x10 mm (editable in the Property panel)
+_cube = _doc.addObject("Part::Box", "MyCube")
+_cube.Length = 10.0
+_cube.Width  = 10.0
+_cube.Height = 10.0
+
+_doc.recompute()
+
+# Optional: uncomment to auto-save next to macro
+# import os, time
+# p = os.path.join(os.path.dirname(__file__), f"cube-{time.strftime('%Y%m%d-%H%M%S')}.FCStd")
+# _doc.saveAs(p)
+# App.Console.PrintMessage(f"Saved: {p}\n")

@@ -1,0 +1,111 @@
+# -*- coding: utf-8 -*-
+# Macro: Save current document as FCStd and optionally export STL, focusing the final body
+# Steps:
+# 1) Find final body (unreferenced shape) or fallback largest shape
+# 2) Show/focus final body (axonometric + fit)
+# 3) Ask for FCStd save path; then optionally ask for STL path and export
+
+import os
+import FreeCAD as App
+import FreeCADGui as Gui
+
+DOC = App.ActiveDocument
+if DOC is None:
+    App.Console.PrintError('[SaveExportFit] 没有活动文档。先打开或创建一个模型。\n')
+else:
+    # Find final body
+    referenced = set()
+    def _collect_refs(o):
+        for attr in ('Base','Tool','First','Second'):
+            if hasattr(o, attr):
+                ref = getattr(o, attr)
+                if ref:
+                    referenced.add(ref)
+        for attr in ('Objects','Shapes','Group','Links'):
+            if hasattr(o, attr):
+                try:
+                    for it in getattr(o, attr) or []:
+                        if it:
+                            referenced.add(it)
+                except Exception:
+                    pass
+    for obj in DOC.Objects:
+        _collect_refs(obj)
+
+    candidates = [o for o in DOC.Objects if hasattr(o,'Shape') and getattr(o,'Shape',None) is not None and not o.Shape.isNull()]
+    finals = [o for o in candidates if o not in referenced]
+
+    def _bb_diag(o):
+        try:
+            bb = o.Shape.BoundBox
+            return float(bb.DiagonalLength)
+        except Exception:
+            return 0.0
+
+    target = finals[-1] if finals else (sorted(candidates, key=_bb_diag)[-1] if candidates else None)
+    if target is None:
+        App.Console.PrintError('[SaveExportFit] 文档中未找到可见的形体对象。\n')
+    else:
+        # Show final body only
+        for o in candidates:
+            try:
+                o.ViewObject.Visibility = (o == target)
+            except Exception:
+                pass
+        # Focus
+        try:
+            Gui.Selection.clearSelection(); Gui.Selection.addSelection(target)
+        except Exception:
+            pass
+        try:
+            av = Gui.ActiveDocument.ActiveView
+            av.viewAxonometric(); Gui.SendMsgToActiveView('ViewFit')
+        except Exception:
+            pass
+
+        # Ask save paths
+        try:
+            try:
+                from PySide2 import QtWidgets
+            except Exception:
+                from PySide import QtGui as QtWidgets
+            dlg = QtWidgets.QFileDialog
+            # FCStd save path
+            fcstd_path, _ = dlg.getSaveFileName(None, '保存 FCStd', App.getUserAppDataDir(), 'FreeCAD Document (*.FCStd)')
+            stl_path = ''
+            if fcstd_path:
+                # Ask STL
+                ask_stl = QtWidgets.QMessageBox.question(None, '导出 STL', '是否同时导出 STL?', QtWidgets.QMessageBox.Yes|QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
+                if ask_stl == QtWidgets.QMessageBox.Yes:
+                    stl_path, _ = dlg.getSaveFileName(None, '导出 STL', os.path.splitext(fcstd_path)[0] + '.stl', 'STL Files (*.stl)')
+        except Exception:
+            fcstd_path = os.path.join(App.getUserAppDataDir(), 'export.FCStd')
+            stl_path = ''
+
+        # Save FCStd
+        if fcstd_path:
+            try:
+                DOC.saveAs(fcstd_path)
+                App.Console.PrintMessage('[SaveExportFit] 已保存 FCStd: %s\n' % fcstd_path)
+            except Exception as e:
+                App.Console.PrintError('[SaveExportFit] 保存失败: %s\n' % e)
+        else:
+            App.Console.PrintMessage('[SaveExportFit] 已取消保存。\n')
+
+        # Optional STL export
+        if stl_path:
+            exported = False
+            try:
+                import Mesh
+                Mesh.export([target], stl_path)
+                exported = True
+            except Exception:
+                try:
+                    import MeshPart
+                    mesh = MeshPart.meshFromShape(Shape=target.Shape, LinearDeflection=0.1, AngularDeflection=0.523599, Relative=False)
+                    mesh.write(stl_path)
+                    exported = True
+                except Exception as e2:
+                    App.Console.PrintError('[SaveExportFit] STL 导出失败: %s\n' % e2)
+            if exported:
+                App.Console.PrintMessage('[SaveExportFit] 已导出 STL: %s\n' % stl_path)

@@ -1,0 +1,77 @@
+# -*- coding: utf-8 -*-
+# Macro: Show final body and fit view
+# Usage: Open your FCStd in FreeCAD GUI, then Macro -> Macros... -> Select this macro -> Execute
+
+import FreeCAD as App
+import FreeCADGui as Gui
+
+DOC = App.ActiveDocument
+if DOC is None:
+    App.Console.PrintError('[ShowBodyFit] No active document. Open a .FCStd first.\n')
+else:
+    # Collect referenced (intermediate) objects
+    referenced = set()
+    def _collect_refs(o):
+        for attr in ('Base', 'Tool'):
+            if hasattr(o, attr):
+                ref = getattr(o, attr)
+                if ref:
+                    referenced.add(ref)
+        for attr in ('Objects', 'Shapes', 'Group', 'Links'):
+            if hasattr(o, attr):
+                try:
+                    for it in getattr(o, attr) or []:
+                        if it:
+                            referenced.add(it)
+                except Exception:
+                    pass
+    for obj in DOC.Objects:
+        _collect_refs(obj)
+
+    # Shape-bearing candidates
+    candidates = [o for o in DOC.Objects if hasattr(o, 'Shape') and o.Shape is not None and not o.Shape.isNull()]
+    finals = [o for o in candidates if o not in referenced]
+
+    def _bb_diag(o):
+        try:
+            bb = o.Shape.BoundBox
+            return float(bb.DiagonalLength)
+        except Exception:
+            return 0.0
+
+    target = None
+    if finals:
+        # prefer the last created "final" object
+        target = finals[-1]
+    elif candidates:
+        # fallback: largest bounding-box candidate
+        target = sorted(candidates, key=_bb_diag)[-1]
+
+    if target is None:
+        App.Console.PrintError('[ShowBodyFit] No solid/shape found in document.\n')
+    else:
+        # Show target, hide other candidates to avoid visual clutter
+        for o in candidates:
+            try:
+                o.ViewObject.Visibility = (o == target)
+            except Exception:
+                pass
+        # Select and fit view
+        try:
+            Gui.Selection.clearSelection()
+            Gui.Selection.addSelection(target)
+        except Exception:
+            pass
+        try:
+            av = Gui.ActiveDocument.ActiveView
+            av.viewAxonometric()
+            Gui.SendMsgToActiveView('ViewFit')
+        except Exception:
+            pass
+        # Report bbox
+        try:
+            bb = target.Shape.BoundBox
+            App.Console.PrintMessage('[ShowBodyFit] Target: %s  BB: X[%.3f, %.3f] Y[%.3f, %.3f] Z[%.3f, %.3f]\n' % (
+                target.Name, bb.XMin, bb.XMax, bb.YMin, bb.YMax, bb.ZMin, bb.ZMax))
+        except Exception:
+            App.Console.PrintMessage('[ShowBodyFit] Target: %s\n' % target.Name)

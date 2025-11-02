@@ -1,0 +1,44 @@
+# -*- coding: utf-8 -*-
+# Macro: Apply fillet (round) to selected edges with a given radius
+# Usage: Select one or more edges in GUI, then run this macro. It will create Part::Fillet.
+
+import FreeCAD as App
+import FreeCADGui as Gui
+
+DOC = App.ActiveDocument or App.newDocument("FilletDoc")
+sel = Gui.Selection.getSelectionEx()
+if not sel:
+    App.Console.PrintError('[FilletEdges] 请先选择一个或多个边（Edges）。\n')
+else:
+    # Ask radius
+    try:
+        from PySide2 import QtWidgets
+    except Exception:
+        from PySide import QtGui as QtWidgets  # fallback for older versions
+    r, ok = QtWidgets.QInputDialog.getDouble(None, 'Fillet 半径', '半径 (mm):', 1.0, 0.01, 1e6, 2)
+    if not ok:
+        App.Console.PrintMessage('[FilletEdges] 已取消。\n')
+    else:
+        # Build fillet on the first selected object; collect edge subelements
+        base = sel[0].Object
+        edge_names = []
+        for s in sel:
+            if s.Object == base:
+                for n in s.SubElementNames:
+                    if n.startswith('Edge'):
+                        edge_names.append(n)
+        if not edge_names:
+            App.Console.PrintError('[FilletEdges] 没有在首个对象上选中任何 Edge。\n')
+        else:
+            fil = DOC.addObject('Part::Fillet', 'Fillet')
+            fil.Base = base
+            fil.Edges = edge_names
+            fil.Radius = float(r)
+            DOC.recompute()
+            # Hide base, show fillet result
+            try:
+                base.ViewObject.Visibility = False
+                fil.ViewObject.Visibility = True
+            except Exception:
+                pass
+            App.Console.PrintMessage('[FilletEdges] 已创建圆角：半径=%.3f，边数=%d\n' % (r, len(edge_names)))

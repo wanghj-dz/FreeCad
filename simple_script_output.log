@@ -1,0 +1,11 @@
+==================================================
+简化的FreeCAD脚本开始执行
+Python版本: 3.11.13 | packaged by conda-forge | (main, Jun  4 2025, 14:39:58) [MSC v.1943 64 bit (AMD64)]
+当前工作目录: D:\FreeCad
+==================================================
+成功导入FreeCAD模块，版本: ['1', '0', '2', '39319 (Git)', 'https://github.com/FreeCAD/FreeCAD', '2025/08/05 20:19:07', '(HEAD detached at 1.0.2)', '256fc7eff3379911ab5daf88e10182c509aa8052']
+输出目录: d:\FreeCad
+FreeCAD 1.0.2, Libs: 1.0.2R39319 (Git)
+(C) 2001-2025 FreeCAD contributors
+FreeCAD is free and open-source software licensed under the terms of LGPL2+ license.
+

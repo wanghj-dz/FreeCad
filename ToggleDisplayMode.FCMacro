@@ -1,0 +1,34 @@
+# -*- coding: utf-8 -*-
+# Macro: Toggle display mode between Shaded / Flat Lines / Wireframe for selected (or all visible) objects
+
+import FreeCAD as App
+import FreeCADGui as Gui
+
+DOC = App.ActiveDocument
+if DOC is None:
+    App.Console.PrintError('[ToggleDisplayMode] 没有活动文档。\n')
+else:
+    sel = Gui.Selection.getSelection()
+    targets = sel if sel else [o for o in DOC.Objects if hasattr(o,'ViewObject') and o.ViewObject.Visibility]
+    modes_cycle = ['Shaded', 'Flat Lines', 'Wireframe']
+    for o in targets:
+        try:
+            vo = o.ViewObject
+            cur = getattr(vo, 'DisplayMode', 'Shaded')
+            # pick next available mode in cycle
+            for i in range(len(modes_cycle)):
+                if cur == modes_cycle[i] and (i+1) < len(modes_cycle):
+                    nxt = modes_cycle[i+1]
+                    break
+            else:
+                nxt = modes_cycle[0]
+            if nxt in getattr(vo, 'listDisplayModes', lambda: [])():
+                vo.DisplayMode = nxt
+            else:
+                # fallback: set first available
+                modes = vo.listDisplayModes()
+                if modes:
+                    vo.DisplayMode = modes[0]
+        except Exception:
+            pass
+    App.Console.PrintMessage('[ToggleDisplayMode] 已切换显示模式。\n')

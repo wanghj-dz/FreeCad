@@ -1,0 +1,56 @@
+# -*- coding: utf-8 -*-
+# Macro: Load MyFreeCADMacros toolbar by executing register_toolbar.py
+# Usage: Macro -> Macros... -> select this macro -> Execute
+
+import os
+import FreeCAD as App
+import FreeCADGui as Gui
+
+# Resolve root folder containing register_toolbar.py (prefer user macro dir)
+candidates = []
+# 1) User macro dir
+try:
+    user_app = App.getUserAppDataDir()
+    candidates.append(os.path.join(user_app, 'Macro'))
+except Exception:
+    appdata = os.environ.get('APPDATA')
+    if appdata:
+        candidates.append(os.path.join(appdata, 'FreeCAD', 'Macro'))
+# 2) Env override
+env_root = os.environ.get('FC_MACRO_ROOT')
+if env_root:
+    candidates.append(env_root)
+# 3) Script location
+this_file = globals().get('__file__')
+if this_file:
+    candidates.append(os.path.dirname(os.path.abspath(this_file)))
+# 4) Project default
+candidates.append(r'd:\\FreeCad')
+
+path = None
+for c in candidates:
+    p = os.path.join(c, 'register_toolbar.py')
+    if os.path.isfile(p):
+        path = p
+        break
+
+if not path:
+    # Last resort: ask user to pick the file
+    try:
+        from PySide2 import QtWidgets
+    except Exception:
+        from PySide import QtGui as QtWidgets
+    dlg = QtWidgets.QFileDialog
+    picked, _ = dlg.getOpenFileName(None, '选择 register_toolbar.py', r'd:\\', 'Python Files (*.py)')
+    if picked and os.path.basename(picked) == 'register_toolbar.py':
+        path = picked
+
+if not path:
+    App.Console.PrintError('[LoadMyToolbar] 没有找到 register_toolbar.py，请先确认路径或设置环境变量 FC_MACRO_ROOT。\n')
+else:
+    try:
+        ns = {'__file__': path, '__name__': '__main__'}
+        exec(compile(open(path, 'rb').read(), path, 'exec'), ns)
+        App.Console.PrintMessage('[LoadMyToolbar] 工具栏加载完成。\n')
+    except Exception as e:
+        App.Console.PrintError('[LoadMyToolbar] 加载失败: %s\n' % e)
