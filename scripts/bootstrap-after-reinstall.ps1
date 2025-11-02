@@ -11,14 +11,16 @@ if (-not (Test-Path -LiteralPath $toolkitScripts)) {
 }
 
 # 1) Re-install global toolkit tasks (idempotent)
-$installToolkit = Join-Path $toolkitScripts 'install-global-gh-toolkit.ps1'
-if (-not (Test-Path -LiteralPath $installToolkit)) {
-  # Try to find it in current workspace as a fallback
-  $wsInstall = Join-Path (Get-Location) 'scripts\install-global-gh-toolkit.ps1'
-  if (Test-Path -LiteralPath $wsInstall) { Copy-Item -LiteralPath $wsInstall -Destination $installToolkit -Force }
-}
+$wsInstall = Join-Path (Get-Location) 'scripts\install-global-gh-toolkit.ps1'
+$installToolkit = if (Test-Path -LiteralPath $wsInstall) { $wsInstall } else { Join-Path $toolkitScripts 'install-global-gh-toolkit.ps1' }
 if (Test-Path -LiteralPath $installToolkit) {
   pwsh -NoProfile -ExecutionPolicy Bypass -File $installToolkit | Out-Host
+  # If using workspace installer, also refresh the toolkit copy
+  if ($installToolkit -eq $wsInstall) {
+    try {
+      Copy-Item -LiteralPath $wsInstall -Destination (Join-Path $toolkitScripts 'install-global-gh-toolkit.ps1') -Force
+    } catch {}
+  }
 } else {
   Warn "install-global-gh-toolkit.ps1 not found. Open your repo with scripts and run its installer once."
 }

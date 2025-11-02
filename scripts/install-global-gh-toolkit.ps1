@@ -37,9 +37,20 @@ $toCopy = @(
 
 foreach ($f in $toCopy) {
     $src = Join-Path $workspaceScripts $f
+    $dst = Join-Path $scriptsTarget $f
     if (Test-Path -LiteralPath $src) {
-        Copy-Item -LiteralPath $src -Destination (Join-Path $scriptsTarget $f) -Force
-        Info "Installed: $f"
+        try {
+            $srcFull = [IO.Path]::GetFullPath($src)
+            $dstFull = [IO.Path]::GetFullPath($dst)
+            if ($srcFull -eq $dstFull) {
+                Info "Already up-to-date: $f"
+            } else {
+                Copy-Item -LiteralPath $src -Destination $dst -Force
+                Info "Installed: $f"
+            }
+        } catch {
+            Warn "Failed to install $($f): $_"
+        }
     } else {
         Warn "Missing script: $f (skipped)"
     }
