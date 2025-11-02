@@ -191,6 +191,7 @@ os.environ['FC_MACRO_ROOT'] = r'd:\\FreeCad'
   - gh: Setup Git — 由 gh 自动配置 Git 凭据（适用于首次配置或切换账户）。
   - gh: Create Release (web) — 在浏览器中创建 Release（交互式表单）。
   - gh: Release Create (prompt, generate-notes) — 任务内交互输入 Tag（如 v0.1.1），自动生成 Release Notes 并创建发布。
+  - gh: Release Create (prompt, draft) — 创建“草稿”发布（可先校对、再正式发布），同样自动生成 Release Notes。
   - gh: Releases View (web) — 在浏览器中查看 Release 页面。
   - gh: Diagnostics (log) — 采集 gh/git/环境信息并输出日志路径，便于排障。
   - gh: Install global toolkit (user tasks) — 一键将本仓库的脚本安装到用户目录（%USERPROFILE%\.vscode-gh-toolkit\scripts），并生成用户级 tasks 片段，实现在“任何路径/文件夹”中直接使用这些任务。
@@ -286,6 +287,7 @@ ssh -T git@github.com
 
 从此以后，即使新建一个空文件夹打开 VS Code，也可以通过 Terminal -> Run Task… 直接使用以 `global:` 前缀开头的任务（例如 `global: repo: Create & Push (private, HTTPS)`）。
 另外还提供：`global: gh: Release Create (prompt, generate-notes)`，在任意仓库目录下交互创建发布。
+以及：`global: gh: Release Create (prompt, draft)`，用于先创建草稿版发布。
 
 ## 六、PowerShell 模块：RepoToolkit（可选，更优雅）
 
@@ -391,6 +393,21 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File "${workspaceFolder}/scripts/instal
 - 完成后重载 VS Code，即可在任何目录直接使用以 `global:` 开头的任务。
 
 提示：如果你之前尚未创建任何备份，建议先在当前环境运行一次“VS Code: Backup user (zip)”。
+
+
+
+## 八、版本历史 / 变更日志
+
+- v0.1.1 — Release Create（交互/自动说明）
+  - 新增发布任务与脚本：`gh: Release Create (prompt, generate-notes)`（工作区）与 `global: gh: Release Create (prompt, generate-notes)`（全局）
+  - 新增 Draft 变体：`gh: Release Create (prompt, draft)` 与 `global: gh: Release Create (prompt, draft)`
+  - 链接：<https://github.com/wanghj-dz/FreeCad/releases/tag/v0.1.1>
+
+- v0.1.0 — 备份/恢复/引导（VS Code 用户配置）
+  - 新增 `backup-vscode-user.ps1`、`restore-vscode-user.ps1`、`bootstrap-after-reinstall.ps1`
+  - 全局安装器集成以上脚本并生成 global: 任务；补充工作区任务
+  - 修复备份 zip 目标路径问题；完善 README
+  - 链接：<https://github.com/wanghj-dz/FreeCad/releases/tag/v0.1.0>
 
 
 
