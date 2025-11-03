@@ -260,6 +260,30 @@
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "dedicated" }
     }
+    ,
+    {
+      "label": "git: Push",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/git-push-with-fallback.ps1",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "git: Pull --rebase",
+      "type": "shell",
+      "command": "git pull --rebase --autostash",
+      "options": { "shell": { "executable": "pwsh.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"] } },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "git: Push (force-with-lease)",
+      "type": "shell",
+      "command": "git push --force-with-lease origin HEAD",
+      "options": { "shell": { "executable": "pwsh.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"] } },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    }
   ],
   "inputs": [
     {
