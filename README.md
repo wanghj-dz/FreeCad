@@ -413,3 +413,81 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File "${workspaceFolder}/scripts/instal
 
 
 
+## 九、FreeCAD 脚本组织与运行（NoGUI vs GUI）
+
+为便于长期维护与批次区分，本仓库对 FreeCAD 脚本与输出做了统一规范：
+
+- 脚本目录
+  - `FreecadNoGUIPys/`：无界面脚本（使用 FreeCADCmd 运行）
+    - 例如：`FreecadNoGUIPys/freecadtest_headless.py`
+  - `FreecadGUIPys/`：GUI 控制台脚本（在 FreeCAD 图形界面 Python 控制台运行）
+    - 例如：`FreecadGUIPys/freecadtest.py`
+  - 兼容层：`freecadtest.py`（仓库根）会转发到 `FreecadGUIPys/freecadtest.py`，避免旧路径引用失效。
+
+- 输出目录与命名
+  - 基础目录：默认 `FreeCadTest/`（位于仓库根）；也可用环境变量 `FREECAD_OUTPUT` 或运行器参数 `-OutputPath` 指定。
+  - 类型子目录（自动按扩展名分类，大小写不敏感复用现有目录）：
+    - FCStd → `FreeCadTest/FCStd/`
+    - STEP → `FreeCadTest/STEP/`
+  - STL → `FreeCadTest/STL/`
+    - PDF → `FreeCadTest/PDF/`
+    - 其它 → `FreeCadTest/Other/`
+  - 统一时间戳文件名：`YYYYMMDD-HHMMSS`
+    - 示例：
+      - `FreeCadTest/STEP/part_export_20251103-124330.step`
+  - `FreeCadTest/STL/mesh_export_20251103-124330.stl`
+      - `FreeCadTest/FCStd/api_test_result_20251103-124330.FCStd`
+
+### 如何运行（推荐方式）
+
+- 无界面（批量/自动化友好）：
+
+  可使用仓库自带的运行器脚本（会自动寻找 FreeCADCmd、输出日志、可选自定义输出目录）。
+
+  可选命令（文档示例，非必需直接执行）：
+
+  ```powershell
+  # 在默认 FreeCadTest 目录下生成按类型分类且带时间戳的文件
+  pwsh -NoProfile -ExecutionPolicy Bypass -File d:\FreeCad\scripts\run-freecad.ps1 \
+    -ScriptPath d:\FreeCad\FreecadNoGUIPys\freecadtest_headless.py \
+    -LogPath d:\FreeCad\.logs\freecadtest-headless.log
+
+  # 自定义基础输出目录（仍会自动按类型分目录且带时间戳）
+  pwsh -NoProfile -ExecutionPolicy Bypass -File d:\FreeCad\scripts\run-freecad.ps1 \
+    -ScriptPath d:\FreeCad\FreecadNoGUIPys\freecadtest_headless.py \
+    -OutputPath d:\FreeCad\FreeCadTest \
+    -LogPath d:\FreeCad\.logs\freecadtest-headless.log
+  ```
+
+- GUI 控制台脚本（在 FreeCAD 图形界面运行）：
+
+  打开 `FreecadGUIPys/freecadtest.py`，在 FreeCAD GUI 的 Python 控制台执行文件内容；或将其作为宏/脚本加载。GUI 可用时会额外导出 PDF（TechDraw）。
+
+### VS Code 快速运行任务
+
+无需记命令，直接用 VS Code 任务运行：Terminal -> Run Task…
+
+- freecad: Run NoGUI (headless test)
+  - 调用脚本：`scripts/run-freecad.ps1`
+  - 运行目标：`FreecadNoGUIPys/freecadtest_headless.py`
+  - 行为：自动寻找 FreeCADCmd，输出日志到 `.logs/`，结果保存到 `FreeCadTest/<类型>/..._YYYYMMDD-HHMMSS.*`
+
+- freecad: Launch GUI (open app)
+  - 调用脚本：`scripts/run-freecad-gui.ps1`
+  - 行为：启动 FreeCAD 图形界面，并在终端提示如何在 GUI Python 控制台执行脚本。
+  - 进阶：若想在启动后快速执行某个脚本，可在终端单独运行（示例）：
+
+    ```powershell
+    pwsh -NoProfile -ExecutionPolicy Bypass -File d:\FreeCad\scripts\run-freecad-gui.ps1 -ScriptPath d:\FreeCad\FreecadGUIPys\freecadtest.py
+    ```
+
+提示：如需更改无界面运行的输出目录，可在任务前设置环境变量 `FREECAD_OUTPUT`，或修改任务命令为添加 `-OutputPath <你的目录>` 参数；类型子目录与时间戳命名会自动应用。
+
+### 小提示
+
+- 若已有 `STL` 目录，新的 STL 导出会统一进入 `mesh` 目录；可用 `scripts/unify-freecad-names.ps1` 迁移历史 STL 文件。
+- 需要在每次运行前清理历史产物，可告知我加入一个开关（例如 `CLEAN_OLD_OUTPUT=1`）。
+- `FREECAD_OUTPUT` 环境变量与运行器 `-OutputPath` 都是设置“基础目录”，类型子目录与时间戳命名始终会自动应用。
+
+
+

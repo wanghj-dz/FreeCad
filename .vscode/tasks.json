@@ -2,6 +2,20 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "freecad: Run NoGUI (headless test)",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/run-freecad.ps1 -ScriptPath ${workspaceFolder}/FreecadNoGUIPys/freecadtest_headless.py",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "freecad: Launch GUI (open app)",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/run-freecad-gui.ps1",
+      "problemMatcher": [],
+      "presentation": { "reveal": "never", "panel": "dedicated" }
+    },
+    {
       "label": "gh: Bootstrap (check/install)",
       "type": "shell",
       "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File ${workspaceFolder}/scripts/gh-bootstrap.ps1",
