@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>三视图练习 — 左视图观测与坐标填写（可打印）</title>
+<style>
+  @page { size: A4; margin: 18mm; }
+  body { font-family: "Helvetica Neue", Arial, sans-serif; color:#111; }
+  h1 { text-align:center; }
+  .row { display:flex; gap:20px; }
+  .diagram { flex:1; }
+  svg { width:100%; height: auto; border:1px solid #ccc; background:#fff; }
+  table { width:100%; border-collapse: collapse; margin-top:12px; }
+  th, td { border:1px solid #333; padding:6px; text-align:center; }
+  .notes { font-size:0.95em; margin-top:8px; }
+</style>
+</head>
+<body>
+  <h1>三视图练习 — 左视图观测与坐标填写</h1>
+  <p>说明：下图为实体的轴测示意（简化模型）及对应的左视图投影。请根据左视图（Left view）中可见的点，填写每个点的三维坐标（X, Y, Z）。（坐标单位：毫米）</p>
+
+  <!-- Embedded point data (3D) -->
+  <script>
+    // 定义点：{id,label,x,y,z}
+    const points = [
+      {id:1,label:'A', x:25, y:60, z:0},
+      {id:2,label:'B', x:25, y:20, z:0},
+      {id:3,label:'C', x:-15, y:60, z:0},
+      {id:4,label:'D', x:-15, y:20, z:0},
+      {id:5,label:'E', x:-30, y:25, z:0},
+      {id:6,label:'F', x:-30, y:-25, z:0},
+      {id:7,label:'G', x:30, y:-25, z:0},
+      {id:8,label:'H', x:30, y:25, z:0},
+      {id:9,label:'I', x:30, y:-15, z:60},
+      {id:10,label:'J', x:30, y:-25, z:60},
+      {id:11,label:'K', x:-30, y:15, z:60},
+      {id:12,label:'O', x:0, y:0, z:0}
+    ];
+
+    // Axonometric (isometric-like) projection
+    function projectIso(p){
+      const cos30 = 0.8660254037844386;
+      const sin30 = 0.5;
+      const sx = (p.x - p.y) * cos30;
+      const sy = p.z + (p.x + p.y) * sin30;
+      return {sx, sy};
+    }
+
+    // Left view projection to YZ (we display horizontal = -Y, vertical = Z)
+    function projectLeft(p){
+      return {lx: -p.y, ly: p.z};
+    }
+
+    // Determine visible points in left view: for each projected (Y,Z) rounded to 1e-3, choose point with smallest x (closest to left observer at negative X)
+    function visibleInLeft(pts){
+      const map = {}; // key -> point
+      pts.forEach(p=>{
+        const key = p.y.toFixed(3)+','+p.z.toFixed(3);
+        if(!(key in map) || p.x < map[key].x){
+          map[key]=p;
+        }
+      });
+      return Object.values(map);
+    }
+
+    const visible = visibleInLeft(points);
+
+    // Build SVGs once DOM loaded
+    window.onload = function(){
+      // isometric SVG
+      const svgIso = document.getElementById('svgIso');
+      const isoGroup = document.getElementById('isoGroup');
+      // compute bounds
+      const proj = points.map(p=>projectIso(p));
+      const xs = proj.map(q=>q.sx), ys = proj.map(q=>q.sy);
+      const minx = Math.min(...xs), maxx=Math.max(...xs), miny=Math.min(...ys), maxy=Math.max(...ys);
+      const margin = 20;
+      const width = 500, height = 400;
+      svgIso.setAttribute('viewBox', `${minx-20} ${miny-20} ${maxx-minx+40} ${maxy-miny+40}`);
+      // draw lines for base rectangle and top rectangle using point ids
+      const getP = id => points.find(pp=>pp.id===id);
+      function addLine(a,b,opts){
+        const pa=projectIso(getP(a)); const pb=projectIso(getP(b));
+        const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1',pa.sx); line.setAttribute('y1',pa.sy); line.setAttribute('x2',pb.sx); line.setAttribute('y2',pb.sy);
+        line.setAttribute('stroke',opts && opts.stroke?opts.stroke:'#333'); line.setAttribute('stroke-width',opts && opts.width?opts.width:2);
+        if(opts && opts.dash) line.setAttribute('stroke-dasharray',opts.dash);
+        isoGroup.appendChild(line);
+      }
+      // base rectangle E(-30,25)->F(-30,-25)->G(30,-25)->H(30,25)
+      addLine(5,6); addLine(6,7); addLine(7,8); addLine(8,5);
+      // draw vertical extrusions from base to top where applicable (connect base point id -> top point id)
+      // map: G(7) -> J(10), E(5) -> K(11)
+      addLine(7,10,{stroke:'#888',width:1,dash:'4 2'});
+      addLine(5,11,{stroke:'#888',width:1,dash:'4 2'});
+      // draw top connectors (approximate)
+      addLine(11,10,{stroke:'#666',width:1});
+      addLine(10,9,{stroke:'#666',width:1});
+    };
+  </script>
+
+  <div class="row">
+    <div class="diagram">
+      <h3>轴测（简化示意）</h3>
+      <svg id="svgIso" xmlns="http://www.w3.org/2000/svg"><g id="isoGroup"></g></svg>
+    </div>
+    <div class="diagram">
+      <h3>左视图（Left view：水平=-Y，垂直=Z）</h3>
+      <svg id="svgLeft" xmlns="http://www.w3.org/2000/svg" viewBox="-100 -10 220 140">
+        <g id="leftGroup">
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <h3>练习：填写下列可见点在三维坐标系中的坐标（X,Y,Z）</h3>
+  <table>
+    <thead>
+      <tr><th>序号</th><th>点名</th><th>X</th><th>Y</th><th>Z</th><th>教师核对（答案）</th></tr>
+    </thead>
+    <tbody id="answerTable">
+    </tbody>
+  </table>
+
+  <div class="notes">
+    打印提示：打开本页面并在浏览器中选择“打印”→保存为 PDF（纸张 A4）。
+  </div>
+
+<script>
+// Continue building SVG and table now (after functions declared)
+(function(){
+  // recreate visible set and draw
+  const svgLeft = document.getElementById('svgLeft');
+  const leftGroup = document.getElementById('leftGroup');
+  // compute left view projection extents
+  const projLeft = points.map(p=>projectLeft(p));
+  const xs = projLeft.map(q=>q.lx); const ys = projLeft.map(q=>q.ly);
+  const minx = Math.min(...xs), maxx = Math.max(...xs), miny=Math.min(...ys), maxy=Math.max(...ys);
+  // mapping to svg coords
+  function mapX(x){ return (x - minx) / (maxx - minx || 1) * 180 + -90; }
+  function mapY(y){ return (maxy - y) / (maxy - miny || 1) * 120 + -10; }
+  // draw axes
+  const axisX = document.createElementNS('http://www.w3.org/2000/svg','line'); axisX.setAttribute('x1',-90); axisX.setAttribute('y1',100); axisX.setAttribute('x2',90); axisX.setAttribute('y2',100); axisX.setAttribute('stroke','#000'); leftGroup.appendChild(axisX);
+  const axisY = document.createElementNS('http://www.w3.org/2000/svg','line'); axisY.setAttribute('x1',-90); axisY.setAttribute('y1',100); axisY.setAttribute('x2',-90); axisY.setAttribute('y2',-10); axisY.setAttribute('stroke','#000'); leftGroup.appendChild(axisY);
+  // draw points and labels (visible only)
+  const vis = visibleInLeft(points);
+  vis.forEach((p,i)=>{
+    const pr = projectLeft(p);
+    const cx = mapX(pr.lx); const cy = mapY(pr.ly);
+    const circ = document.createElementNS('http://www.w3.org/2000/svg','circle'); circ.setAttribute('cx',cx); circ.setAttribute('cy',cy); circ.setAttribute('r',4); circ.setAttribute('fill','#d33'); leftGroup.appendChild(circ);
+    const txt = document.createElementNS('http://www.w3.org/2000/svg','text'); txt.setAttribute('x',cx+6); txt.setAttribute('y',cy+4); txt.setAttribute('font-size',12); txt.textContent = p.label; leftGroup.appendChild(txt);
+  });
+  // fill table with visible points (student sees labels and blanks)
+  const tbody = document.getElementById('answerTable');
+  vis.forEach((p,idx)=>{
+    const tr = document.createElement('tr');
+    const td1 = document.createElement('td'); td1.textContent = idx+1; tr.appendChild(td1);
+    const td2 = document.createElement('td'); td2.textContent = p.label; tr.appendChild(td2);
+    const td3 = document.createElement('td'); td3.textContent = ''; tr.appendChild(td3);
+    const td4 = document.createElement('td'); td4.textContent = ''; tr.appendChild(td4);
+    const td5 = document.createElement('td'); td5.textContent = ''; tr.appendChild(td5);
+    const td6 = document.createElement('td'); td6.textContent = `${p.x.toFixed(3)}, ${p.y.toFixed(3)}, ${p.z.toFixed(3)}`; td6.style.color='#999'; tr.appendChild(td6);
+    tbody.appendChild(tr);
+  });
+})();
+</script>
+</body>
+</html>

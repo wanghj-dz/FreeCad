@@ -1,0 +1,101 @@
+# FreeCAD GUI 宏：提取实体（或选中顶点）的点坐标并输出左视图投影（CSV）
+import FreeCAD, FreeCADGui
+from FreeCAD import Vector
+import os, csv
+
+doc = FreeCAD.ActiveDocument
+if doc is None:
+    FreeCAD.Console.PrintError('请先在 FreeCAD 中打开文档并激活（在 GUI 中）。\n')
+    raise SystemExit
+
+# 优先使用用户在 GUI 中选择的子元素（顶点）；若无选择，则尝试使用名为 Body 的对象或当前激活对象
+sel = FreeCADGui.Selection.getSelectionEx()
+points = []
+
+if sel and len(sel) > 0 and any(len(s.SubElementNames) > 0 for s in sel):
+    # 处理选中的子元素（如 Vertex）
+    for s in sel:
+        for sub in s.SubObjects:
+            try:
+                # sub 是 Vertex/Edge/Face 等，取其 Point 属性或 BoundBox center
+                if hasattr(sub, 'Point'):
+                    p = sub.Point
+                else:
+                    # 退化处理，取子对象的中心
+                    p = sub.BoundBox.Center
+                points.append(p)
+            except Exception:
+                pass
+else:
+    # 未选中子元素，尝试获取对象
+    obj = None
+    sel_objs = FreeCADGui.Selection.getSelection()
+    if sel_objs:
+        obj = sel_objs[0]
+    else:
+        # 尝试查找名为 Body 的对象
+        if 'Body' in doc.ObjectsByLabel or 'Body' in [o.Name for o in doc.Objects]:
+            try:
+                obj = doc.getObject('Body')
+            except Exception:
+                obj = None
+        # 最后尝试取活动对象
+        if obj is None:
+            obj = FreeCADGui.ActiveDocument.ActiveObject
+    if obj is None:
+        FreeCAD.Console.PrintError('未找到要提取的对象。请在 GUI 中选中顶点或对象，或确保存在名为 Body 的对象。\n')
+        raise SystemExit
+
+    # 提取对象的所有顶点
+    try:
+        for v in obj.Shape.Vertexes:
+            points.append(v.Point)
+    except Exception as e:
+        FreeCAD.Console.PrintError('无法从对象获取顶点：%s\n' % str(e))
+        raise SystemExit
+
+if not points:
+    FreeCAD.Console.PrintError('未检测到任何点（顶点）。请选中顶点或确认对象有几何顶点。\n')
+    raise SystemExit
+
+# 计算左视图投影：两种表示
+rows = []
+for i,p in enumerate(points, start=1):
+    X, Y, Z = float(p.x), float(p.y), float(p.z)
+    # 直接投影到 YZ 平面
+    left_YZ_X = Y
+    left_YZ_Y = Z
+    # 左视图常用记法（观察者在负 X 侧看向原点），水平为 -Y，垂直为 Z
+    left_view_h = -Y
+    left_view_v = Z
+    rows.append((i, X, Y, Z, left_YZ_X, left_YZ_Y, left_view_h, left_view_v))
+
+# 写 CSV 到文档所在目录（或工作目录）
+csv_name = 'left_view_points.csv'
+# 若文档有文件名则放在同目录，否则放在当前工作目录
+if hasattr(doc, 'FileName') and doc.FileName:
+    folder = os.path.dirname(doc.FileName)
+else:
+    folder = os.path.join(os.path.expanduser('~'), 'FreeCAD')
+
+csv_path = os.path.join(folder, csv_name)
+with open(csv_path, 'w', newline='') as f:
+    writer = csv.writer(f)
+    writer.writerow(['Index','X','Y','Z','Left_YZ_X (Y)','Left_YZ_Y (Z)','LeftView_Horizontal (-Y)','LeftView_Vertical (Z)'])
+    for r in rows:
+        writer.writerow(["{:.0f}".format(r[0])]+["{:.6f}".format(x) for x in r[1:]])
+
+FreeCAD.Console.PrintMessage('已写入 CSV：%s\n' % csv_path)
+# 在控制台打印若干内容
+for r in rows:
+    FreeCAD.Console.PrintMessage('Index %d: (X=%.6f, Y=%.6f, Z=%.6f) -> Left(YZ)=(%.6f, %.6f), LeftView(-Y,Z)=(%.6f, %.6f)\n' % r)
+
+# 选中并高亮对象（若存在）
+try:
+    FreeCADGui.Selection.clearSelection()
+    if 'obj' in locals() and obj is not None:
+        FreeCADGui.Selection.addSelection(doc.Name, obj.Name)
+except Exception:
+    pass
+
+FreeCADGui.ActiveDocument.ActiveView.fitAll()

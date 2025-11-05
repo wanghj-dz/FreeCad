@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>三视图 — 左视图练习（空白表）</title>
+  <style>
+    @page { size: A4; margin: 20mm; }
+    body { font-family: Arial, Helvetica, sans-serif; color: #111; }
+    h1 { text-align: center; }
+    .meta { margin-bottom: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { border: 1px solid #333; padding: 8px; text-align: center; }
+    th { background: #f0f0f0; }
+    .notes { font-size: 0.9em; margin-top: 10px; }
+    .footer { margin-top: 20px; font-size: 0.85em; }
+  </style>
+</head>
+<body>
+  <h1>三视图（左视图）练习 — 空白答题表</h1>
+  <div class="meta">
+    说明：此表用于练习把模型上的点投影到左视图（Left view）。请在“Student_Left_X/Student_Left_Y”列填写左视图坐标（约定使用 -Y, Z 的记法，即水平轴为 -Y，垂直轴为 Z）。
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>序号</th>
+        <th>点名（可填写）</th>
+        <th>左视图水平坐标（-Y）</th>
+        <th>左视图垂直坐标（Z）</th>
+        <th>备注</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- 12 行空白 -->
+      <tr><td>1</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>2</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>3</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>4</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>5</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>6</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>7</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>8</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>9</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>10</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>11</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>12</td><td></td><td></td><td></td><td></td></tr>
+    </tbody>
+  </table>
+
+  <div class="notes">
+    教师提示：
+    <ul>
+      <li>若你希望行数与模型顶点数一致，请先在 FreeCAD 中运行 `extract_left_view_points.FCMacro` 生成 `left_view_points.csv`，然后我可以根据该 CSV 自动生成一份精确数量的空白表。</li>
+      <li>浏览器打印为 PDF：打开本文件（`left_view_practice_blank.html`）→ Ctrl+P → 选择“保存为 PDF”或系统打印到 PDF → 设置纸张为 A4 → 打印。</li>
+      <li>命令行自动生成 PDF（示例，需安装 Microsoft Edge 或 Chromium）：<br>
+          <code>msedge --headless --disable-gpu --print-to-pdf="left_view_practice_blank.pdf" "file:///D:/FreeCad/FreeCadTest/FCStd/left_view_practice_blank.html"</code>
+      </li>
+    </ul>
+  </div>
+
+  <div class="footer">生成位置：d:\FreeCad\FreeCadTest\FCStd</div>
+</body>
+</html>
